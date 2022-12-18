@@ -87,40 +87,6 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
             model.addRow(row);
         }
     }
-    // Source: https://www.geeksforgeeks.org/remove-an-element-at-specific-index-from-an-array-in-java/
-    public static String[] removeTheElement(String[] arr, int index)
-    {
- 
-        // If the array is empty
-        // or the index is not in array range
-        // return the original array
-        if (arr == null || index < 0
-            || index >= arr.length) {
- 
-            return arr;
-        }
- 
-        // Create another array of size one less
-        String[] anotherArray = new String[arr.length - 1];
- 
-        // Copy the elements except the index
-        // from original array to the other array
-        for (int i = 0, k = 0; i < arr.length; i++) {
- 
-            // if the index is
-            // the removal element index
-            if (i == index) {
-                continue;
-            }
- 
-            // if the index is not
-            // the removal element index
-            anotherArray[k++] = arr[i];
-        }
- 
-        // return the resultant array
-        return anotherArray;
-    }
     
     public List<String> getDictionary(){
         String str = "";
@@ -128,14 +94,7 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
             str += data.getJudul() + " ";
         }
         String[] temp = str.toLowerCase().split(" ");
-//        
-//        for(int i = 0; i < temp.length; i++){
-//            for(int j = 1; j < temp.length - i; j++){
-//                if (temp[i].equalsIgnoreCase(temp[j])){
-//                    temp = removeTheElement(temp, j);
-//                }
-//            }
-//        }
+
         List<String> dict = Arrays.asList(temp);
         return dict;
     }
@@ -168,50 +127,56 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                 wordBreakUtil(n - i, s.substring(i, n), dict, ans+prefix+" ");
             }
         }
-    } // Time Complexity: O(2^n)
+    } // Time Complexity: O(2^n) karena terdapat sebuah rekursi dalam perulangan for
     
+    // Method untuk mencari (Menggunakan brute-force algorithm berupa Sequential Search)
     public void search(String judul) {
-        String[] wordList;
-        listPencarian = null;
-        wordBreak(judul.length(), dictionary, judul);
-        if (!judul.isBlank()) {
-            wordList = new String[listPencarian.size()];
-            int i = 0;
-            for (String pencarian : listPencarian) {
-                wordList[i] = pencarian;
-                i++;
+        String[] wordList; // Kumpulan kata dari hasil backtracking dictionary
+        listPencarian = null; // Mengosongkan listPencarian yang didapatkan dari wordBreak
+                              //agar tidak terjadi error secara semantik ketika mengisikan ulang laman pencarian
+        wordBreak(judul.length(), dictionary, judul); // Menjalankan metode wordBreak untuk memisah-misah kata yang berhubungan
+        if (!judul.isBlank()) { // Jika string judul tidak kosong (hanya mengandung whitespace atau spasi)
+            wordList = new String[listPencarian.size()]; // Menginisialisasikan array dengan panjang dari hasil wordBreak
+            int i = 0; // Menginisialisasikan iterasi i dengan nilai 0
+            for (String pencarian : listPencarian) { // Untuk setiap array dari listPencarian akan dijadikan variabel String pencarian | O(n)
+                wordList[i] = pencarian; // Memasukkan listPencarian ke dalam array yang telah diisi
+                i++; // Menambahkan iterasi i dengan 1
             }
-            for (Buku cari : dataPerpus.getListBuku()) {
-                try {
-                    if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(wordList[0])) {
-                        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-                        model.setRowCount(0);
-                        Object[] row = new Object[jTable1.getColumnCount()];
-                        row[0] = cari.getKode();
-                        row[1] = cari.getJudul();
-                        row[2] = cari.getPengarang();
-                        row[3] = cari.getHalaman();
-                        row[4] = cari.getLokasi();
-                        model.addRow(row);
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel(); // Mendapatkan model dari tabel
+            model.setRowCount(0); // Mereset tabel untuk digunakan dalam menampilkan hasil search
+            for (Buku cari : dataPerpus.getListBuku()) { // Untuk setiap buku yang terdapat dalam arrayList dataPerpus | O(n)
+                try { // Mencoba kode dan menghindari/mengganti error Exception dengan menggunakan catch
+                    if (wordList.length != 0) { // Jika wordList tidak kosong, maka line ini dijalankan
+                        for (String word : wordList) { // Untuk setiap String yang terdapat di wordList | O(n*n) = O(n^2)
+                            if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(word)) { // Jika buku ditemukan dengan menggunakan wordList
+                                Object[] row = new Object[jTable1.getColumnCount()]; // Menginstansiasikan Object array untuk membuat tabel dalam bentuk baris
+                                row[0] = cari.getKode(); // Menambahkan kode ke baris
+                                row[1] = cari.getJudul(); // Menambahkan judul ke baris
+                                row[2] = cari.getPengarang(); // Menambahkan pengarang ke baris
+                                row[3] = cari.getHalaman(); // Menambahkan halaman ke baris
+                                row[4] = cari.getLokasi(); // Menambahkan lokasi ke baris
+                                model.addRow(row); // Menambahkan semua hasil row ke dalam tabel
+                            }
+                        }
+                    } else { // Jika wordList kosong, maka line ini dijalankan
+                        if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(judul)) { // Jika buku ditemukan dengan menggunakan judul
+                            Object[] row = new Object[jTable1.getColumnCount()]; // Menginstansiasikan Object array untuk membuat tabel dalam bentuk baris
+                            row[0] = cari.getKode(); // Menambahkan kode ke baris
+                            row[1] = cari.getJudul(); // Menambahkan judul ke baris
+                            row[2] = cari.getPengarang(); // Menambahkan pengarang ke baris
+                            row[3] = cari.getHalaman(); // Menambahkan halaman ke baris
+                            row[4] = cari.getLokasi(); // Menambahkan lokasi ke baris
+                            model.addRow(row); // Menambahkan semua hasil row ke dalam tabel
+                        }
                     }
-//                    } else if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(judul)) {
-//                        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-//                        model.setRowCount(0);
-//                        Object[] row = new Object[jTable1.getColumnCount()];
-//                        row[0] = cari.getKode();
-//                        row[1] = cari.getJudul();
-//                        row[2] = cari.getPengarang();
-//                        row[3] = cari.getHalaman();
-//                        row[4] = cari.getLokasi();
-//                        model.addRow(row);
-//                    }
-                } catch (Exception e) {
-                    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-                    model.setRowCount(0);
+                } catch (Exception e) { // Menangkap error yang terdapat dalam percobaan try dan menggantikan pesan error dengan perintah tertentu
+                    model = (DefaultTableModel) jTable1.getModel(); // Mendapatkan model dari tabel
+                    model.setRowCount(0); // Mereset tabel untuk digunakan dalam menampilkan hasil search
                 }
             }
         }
     }
+    // Search time complexity: O(n + n^2) karena terdapat 1 perulangan for-loop, dan 1 perulangan bercabang dalam for-loop
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -224,10 +189,10 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        mencari = new javax.swing.JButton();
+        resetPencarian = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        cariJudul = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -245,27 +210,21 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        jButton1.setText("Cari");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        mencari.setText("Cari");
+        mencari.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                mencariActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Reset Pencarian");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        resetPencarian.setText("Reset Pencarian");
+        resetPencarian.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                resetPencarianActionPerformed(evt);
             }
         });
 
         jLabel3.setText("Judul");
-
-        jTextField2.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                jTextField2KeyTyped(evt);
-            }
-        });
 
         jLabel5.setFont(new java.awt.Font("Segoe UI Black", 0, 14)); // NOI18N
         jLabel5.setText("Cari Berdasarkan Judul");
@@ -283,7 +242,7 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addGap(51, 51, 51)
-                                .addComponent(jTextField2)))
+                                .addComponent(cariJudul)))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 164, Short.MAX_VALUE)
@@ -292,9 +251,9 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                                 .addComponent(jLabel1)
                                 .addGap(143, 143, 143))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jButton2)
+                                .addComponent(resetPencarian)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(mencari, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(10, 10, 10))))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel5)
@@ -312,33 +271,30 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cariJudul, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(32, 32, 32)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
+                    .addComponent(resetPencarian)
+                    .addComponent(mencari))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    
+    // Tombol cari ditekan
+    private void mencariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mencariActionPerformed
         
-        String text = jTextField2.getText();
+        String text = cariJudul.getText();
         if(!text.isEmpty()){
             search(text);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        
+    }//GEN-LAST:event_mencariActionPerformed
+    
+    // Tombol reset pencarian ditekan
+    private void resetPencarianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetPencarianActionPerformed
         fillTableArrayList();
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jTextField2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyTyped
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2KeyTyped
+    }//GEN-LAST:event_resetPencarianActionPerformed
 
     /**
      * @param args the command line arguments
@@ -377,13 +333,13 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JTextField cariJudul;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JButton mencari;
+    private javax.swing.JButton resetPencarian;
     // End of variables declaration//GEN-END:variables
 }
