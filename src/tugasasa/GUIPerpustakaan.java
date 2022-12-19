@@ -107,9 +107,8 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
     }
     
     public void wordBreakUtil(int n, String s, List<String> dict, String ans){
-        listPencarian = new ArrayList<>();
         for(int i = 1; i <= n; i++){
-            // Mengekstrak substring dari 0 ke i dari prefix (huruf awal ke akhir)
+            // Mengekstrak substring dengan range dari 0 ke i dari prefix (huruf awal ke akhir)
             String prefix = s.substring(0, i);
             
             // Jika di dalam dictionary terdapat prefix dari substring,
@@ -132,8 +131,9 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
     // Method untuk mencari (Menggunakan brute-force algorithm berupa Sequential Search)
     public void search(String judul) {
         String[] wordList; // Kumpulan kata dari hasil backtracking dictionary
-        listPencarian = null; // Mengosongkan listPencarian yang didapatkan dari wordBreak
-                              //agar tidak terjadi error secara semantik ketika mengisikan ulang laman pencarian
+        listPencarian = new ArrayList<>(); // Mengosongkan listPencarian yang didapatkan dari wordBreak
+                                            //agar tidak terjadi error secara semantik ketika mengisikan ulang laman pencarian
+        judul = judul.replaceAll("\\s+", ""); //Menghapus spasi pada pencarian
         wordBreak(judul.length(), dictionary, judul); // Menjalankan metode wordBreak untuk memisah-misah kata yang berhubungan
         if (!judul.isBlank()) { // Jika string judul tidak kosong (hanya mengandung whitespace atau spasi)
             wordList = new String[listPencarian.size()]; // Menginisialisasikan array dengan panjang dari hasil wordBreak
@@ -148,7 +148,7 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                 try { // Mencoba kode dan menghindari/mengganti error Exception dengan menggunakan catch
                     if (wordList.length != 0) { // Jika wordList tidak kosong, maka line ini dijalankan
                         for (String word : wordList) { // Untuk setiap String yang terdapat di wordList | O(n*n) = O(n^2)
-                            if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(word)) { // Jika buku ditemukan dengan menggunakan wordList
+                            if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(word.toLowerCase())) { // Jika buku ditemukan dengan menggunakan wordList
                                 Object[] row = new Object[jTable1.getColumnCount()]; // Menginstansiasikan Object array untuk membuat tabel dalam bentuk baris
                                 row[0] = cari.getKode(); // Menambahkan kode ke baris
                                 row[1] = cari.getJudul(); // Menambahkan judul ke baris
@@ -159,7 +159,7 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
                             }
                         }
                     } else { // Jika wordList kosong, maka line ini dijalankan
-                        if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(judul)) { // Jika buku ditemukan dengan menggunakan judul
+                        if (cari.getJudul() != null && cari.getJudul().toLowerCase().contains(judul.toLowerCase())) { // Jika buku ditemukan dengan menggunakan judul
                             Object[] row = new Object[jTable1.getColumnCount()]; // Menginstansiasikan Object array untuk membuat tabel dalam bentuk baris
                             row[0] = cari.getKode(); // Menambahkan kode ke baris
                             row[1] = cari.getJudul(); // Menambahkan judul ke baris
@@ -294,6 +294,7 @@ public class GUIPerpustakaan extends javax.swing.JFrame {
     // Tombol reset pencarian ditekan
     private void resetPencarianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetPencarianActionPerformed
         fillTableArrayList();
+        cariJudul.setText("");
     }//GEN-LAST:event_resetPencarianActionPerformed
 
     /**
